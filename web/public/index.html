@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Horizon · Web</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <canvas id="world" aria-label="Server terrain preview"></canvas>
+  <div class="veil"></div>
+  <main>
+    <header><a class="brand" href="#">HORIZON <span>WEB</span></a><span class="tag">EXPERIMENTAL · 26.3</span></header>
+    <section class="intro"><p class="eyebrow">YOUR CONNECTION, YOUR ROUTE</p><h1>A new horizon.</h1><p>Choose a server. Set your route. Keep your account and game traffic together.</p></section>
+    <section class="layout">
+      <nav aria-label="Menu"><button data-panel="connections" class="selected">01 <span>Connections</span></button><button data-panel="account">02 <span>Account</span></button><button data-panel="about">03 <span>Port status</span></button></nav>
+      <div class="content">
+        <section id="connections" class="panel">
+          <div class="section-title"><h2>Connection route</h2><span>01 / 03</span></div>
+          <div class="field"><label for="profile">Saved routes</label><div class="inline"><select id="profile"><option value="">New route</option></select><button id="delete-profile" class="secondary">Delete</button></div></div>
+          <div class="field"><label for="route-name">Route name</label><input id="route-name" value="Local gateway" maxlength="48" autocomplete="off"></div>
+          <div class="field"><label for="gateway">Gateway address</label><input id="gateway" type="url" placeholder="https://gateway.example" spellcheck="false" autocomplete="off"><small>Your browser reaches Minecraft through this gateway.</small></div>
+          <div class="field"><label for="gateway-key">Gateway key <span>optional for localhost</span></label><input id="gateway-key" type="password" autocomplete="off" placeholder="Kept in memory for this tab"></div>
+          <div class="field"><label for="proxy">Egress proxy <span>optional</span></label><input id="proxy" placeholder="socks5h://host:1080 or http://host:8080" spellcheck="false" autocomplete="off"><small>Applies to the game, account API calls and server authentication. Empty uses the gateway’s connection.</small></div>
+          <div class="actions"><button id="apply" class="secondary">Save &amp; apply route</button><span class="hint">Applying a route reconnects an active session.</span></div>
+          <div class="section-title server-title"><h2>Minecraft server</h2><span>02 / 03</span></div>
+          <div class="field"><label for="server">Server address</label><input id="server" placeholder="play.example.net:25565" spellcheck="false" autocomplete="off"></div>
+          <div class="field"><label for="username">Offline name</label><input id="username" value="Horizon" maxlength="16" autocomplete="off"><small>A signed-in account supplies its own name.</small></div>
+          <div class="actions"><button id="connect" class="primary">Connect</button><button id="ping" class="secondary">Check server</button><button id="disconnect" class="ghost">Disconnect</button></div>
+          <p class="hint">This first browser build connects and previews server terrain. Full gameplay is still being ported.</p>
+        </section>
+        <section id="account" class="panel" hidden>
+          <div class="section-title"><h2>Your account</h2><span>03 / 03</span></div>
+          <p id="account-name" class="account-name">Playing offline</p>
+          <p class="description">Microsoft, Xbox and Minecraft API requests use your selected route. The Microsoft verification page opens in your browser and uses your browser’s own network connection.</p>
+          <p class="description">Account tokens stay in gateway memory. Gateway keys and proxy passwords stay out of saved browser settings. Changing gateways requires signing in again.</p>
+          <div class="actions"><button id="sign-in" class="primary">Sign in with Microsoft</button><button id="sign-out" class="ghost">Sign out</button></div>
+          <div id="device" class="notice" hidden><p>Open <a id="verification" href="https://www.microsoft.com/link" target="_blank" rel="noopener noreferrer">microsoft.com/link</a> and enter:</p><strong id="device-code"></strong><p class="hint">Waiting for you to finish signing in…</p></div>
+        </section>
+        <section id="about" class="panel" hidden>
+          <div class="section-title"><h2>The browser port</h2><span>IN PROGRESS</span></div>
+          <p class="description">Horizon’s original Rust protocol, cryptography, compression and world data run as WebAssembly in this tab. A separate Rust gateway provides TCP and account API access.</p>
+          <ol class="status-list"><li><span>Rust / WASM connection core</span><b>Included</b></li><li><span>Selectable gateways &amp; egress proxies</span><b>Included</b></li><li><span>Routed Microsoft account flow</span><b>Public launcher ID</b></li><li><span>WebGPU terrain preview</span><b>Experimental</b></li><li><span>Native textures, entities &amp; inventory</span><b>Pending</b></li><li><span>Full movement, combat &amp; singleplayer</span><b>Pending</b></li></ol>
+          <p class="description">The terrain preview uses simple shaded blocks. It is not the native renderer or a complete playable client yet. Drag on the preview to look around; this build does not move your player.</p>
+          <a href="https://github.com/adoringlol/horizon/tree/web-port/web" target="_blank" rel="noopener noreferrer">Source &amp; setup instructions ↗</a>
+        </section>
+      </div>
+    </section>
+    <footer><div class="status"><i></i><span id="status" role="status">Loading the Rust / WebAssembly client…</span></div><span id="stats"></span></footer>
+  </main>
+  <div class="wordmark" aria-hidden="true">horizon</div>
+  <div id="chat" aria-label="Server messages" aria-live="polite"></div>
+  <noscript>This application needs JavaScript and WebAssembly enabled.</noscript>
+  <script type="module" src="./bootstrap.js"></script>
+</body>
+</html>
