@@ -22,6 +22,8 @@ wasm-bindgen target/wasm32-unknown-unknown/release/horizon_web.wasm --target web
 cargo run --locked --manifest-path gateway/Cargo.toml
 ```
 
+On Windows, `./web/package.ps1` creates `web/target/horizon-web-windows.zip` containing the release gateway, browser bundle and `run.ps1`. Extract the whole ZIP and run that script to use it without installing Rust. `-NoBuild` packages an already built release. This bundle has the same experimental terrain-viewer scope as the source build.
+
 The `browser port` workflow builds and uploads `web/public/` as the `horizon-web` artifact. Host that directory over HTTPS and run the gateway separately, or let the gateway serve it directly behind a TLS reverse proxy.
 
 ## Menu and route switching
