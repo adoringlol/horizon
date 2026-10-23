@@ -1,3 +1,4 @@
 /target/
 /gateway/target/
 /public/pkg/
+*.horizon.zip

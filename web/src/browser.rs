@@ -1,5 +1,6 @@
 use crate::{
     renderer::Renderer,
+    resources::{MAX_ARCHIVE, Resources},
     session::{Effect, Session},
 };
 use serde::{Deserialize, Serialize};
@@ -47,6 +48,8 @@ struct App {
     session: Option<Session>,
     connected: bool,
     renderer: Option<Renderer>,
+    resources: Option<Rc<Resources>>,
+    resource_epoch: u64,
     dirty: bool,
     last_mesh: f64,
     last_tick: f64,
@@ -90,6 +93,101 @@ fn js_error(value: JsValue) -> String {
     value
         .as_string()
         .unwrap_or_else(|| "The browser operation failed.".into())
+}
+
+fn install_resources(app: &Shared, epoch: u64, bytes: &[u8]) {
+    if app.borrow().resource_epoch != epoch {
+        return;
+    }
+    match Resources::load(bytes) {
+        Ok(resources) => {
+            text(
+                "resource-status",
+                &format!(
+                    "{} · {} block states · {} × {} texture atlas. Loaded for this tab.",
+                    resources.name,
+                    resources.registry.len(),
+                    resources.atlas.side,
+                    resources.atlas.side
+                ),
+            );
+            let resources = Rc::new(resources);
+            let mut app = app.borrow_mut();
+            if let Some(renderer) = &mut app.renderer {
+                renderer.set_resources(Some(resources.clone()));
+            }
+            app.resources = Some(resources);
+            app.dirty = true;
+        }
+        Err(e) => text(
+            "resource-status",
+            &format!("Import failed: {e} Previous resources are still active."),
+        ),
+    }
+}
+
+fn resource_controls(app: &Shared) -> Result<(), JsValue> {
+    click(app, "resource-demo", |app| {
+        app.borrow_mut().resource_epoch += 1;
+        let epoch = app.borrow().resource_epoch;
+        install_resources(&app, epoch, &crate::resources::fixture::bundle());
+    })?;
+    click(app, "resource-clear", |app| {
+        let mut app = app.borrow_mut();
+        app.resource_epoch += 1;
+        app.resources = None;
+        if let Some(renderer) = &mut app.renderer {
+            renderer.set_resources(None);
+        }
+        app.dirty = true;
+        text(
+            "resource-status",
+            "No resource bundle loaded. Terrain uses placeholder colors.",
+        );
+        set_input("resource-file", "");
+    })?;
+    let weak = Rc::downgrade(app);
+    let change = Closure::<dyn FnMut(Event)>::new(move |_| {
+        let Some(app) = weak.upgrade() else {
+            return;
+        };
+        let Some(file) = element("resource-file")
+            .unchecked_into::<HtmlInputElement>()
+            .files()
+            .and_then(|f| f.get(0))
+        else {
+            return;
+        };
+        app.borrow_mut().resource_epoch += 1;
+        let epoch = app.borrow().resource_epoch;
+        if file.size() > MAX_ARCHIVE as f64 {
+            text(
+                "resource-status",
+                "Import failed: the resource bundle exceeds 128 MiB.",
+            );
+            return;
+        }
+        text("resource-status", "Reading and baking local models…");
+        spawn_local(async move {
+            match JsFuture::from(file.array_buffer()).await {
+                Ok(buffer) => {
+                    install_resources(&app, epoch, &js_sys::Uint8Array::new(&buffer).to_vec())
+                }
+                Err(e) if app.borrow().resource_epoch == epoch => {
+                    text("resource-status", &js_error(e))
+                }
+                Err(_) => {}
+            }
+            // Selecting the same file again should retry a failed import.
+            if app.borrow().resource_epoch == epoch {
+                set_input("resource-file", "");
+            }
+        });
+    });
+    element("resource-file")
+        .add_event_listener_with_callback("change", change.as_ref().unchecked_ref())?;
+    change.forget();
+    Ok(())
 }
 
 async fn api(base: &str, token: &str, path: &str, body: Value) -> Result<Value, String> {
@@ -668,6 +766,8 @@ pub fn start() -> Result<(), JsValue> {
         session: None,
         connected: false,
         renderer: None,
+        resources: None,
+        resource_epoch: 0,
         dirty: false,
         last_mesh: 0.0,
         last_tick: 0.0,
@@ -676,6 +776,7 @@ pub fn start() -> Result<(), JsValue> {
     }));
     set_input("gateway", &window().location().origin()?);
     profiles_menu(&app);
+    resource_controls(&app)?;
     click(&app, "connect", |app| {
         spawn_local(async move {
             if let Err(e) = connect(&app, false).await {
@@ -759,12 +860,12 @@ pub fn start() -> Result<(), JsValue> {
     element("profile")
         .add_event_listener_with_callback("change", change.as_ref().unchecked_ref())?;
     change.forget();
-    for name in ["connections", "account", "about"] {
+    for name in ["connections", "account", "resources", "about"] {
         let button = doc()
             .query_selector(&format!("[data-panel='{name}']"))?
             .unwrap();
         let callback = Closure::<dyn FnMut(Event)>::new(move |_| {
-            for panel in ["connections", "account", "about"] {
+            for panel in ["connections", "account", "resources", "about"] {
                 hidden(panel, panel != name);
                 let button = doc()
                     .query_selector(&format!("[data-panel='{panel}']"))
@@ -810,8 +911,11 @@ pub fn start() -> Result<(), JsValue> {
     let rendering = app.clone();
     spawn_local(async move {
         match Renderer::new(canvas).await {
-            Ok(renderer) => {
-                rendering.borrow_mut().renderer = Some(renderer);
+            Ok(mut renderer) => {
+                let mut app = rendering.borrow_mut();
+                renderer.set_resources(app.resources.clone());
+                app.renderer = Some(renderer);
+                app.dirty = true;
                 status("Rust / WASM and WebGPU ready. Choose a server and route.");
             }
             Err(e) => status(&js_error(e)),

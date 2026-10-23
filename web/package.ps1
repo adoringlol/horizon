@@ -31,9 +31,10 @@ No Rust installation or Microsoft application setup is needed for this bundle.
 The default account flow uses the public Minecraft Launcher client ID.
 
 Set a server address in the connection menu. This build speaks 26.3 / protocol
-777. It connects and previews shaded server terrain; it is not the complete
-playable Horizon game. Native textures, entities, inventory, movement, combat
-and singleplayer are still pending. Online account approval and game admission
+777. It connects and previews server terrain, with local texture/model bundle
+import under Resources; it is not the complete playable Horizon game. Entities,
+inventory, lighting, movement, combat and singleplayer are still pending.
+No Minecraft assets are included. Online account approval and game admission
 have not been verified end to end with an account.
 
 The gateway normally listens only on localhost. Remote hosting needs HTTPS,

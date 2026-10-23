@@ -14,7 +14,7 @@
     <header><a class="brand" href="#">HORIZON <span>WEB</span></a><span class="tag">EXPERIMENTAL · 26.3</span></header>
     <section class="intro"><p class="eyebrow">YOUR CONNECTION, YOUR ROUTE</p><h1>A new horizon.</h1><p>Choose a server. Set your route. Keep your account and game traffic together.</p></section>
     <section class="layout">
-      <nav aria-label="Menu"><button data-panel="connections" class="selected">01 <span>Connections</span></button><button data-panel="account">02 <span>Account</span></button><button data-panel="about">03 <span>Port status</span></button></nav>
+      <nav aria-label="Menu"><button data-panel="connections" class="selected">01 <span>Connections</span></button><button data-panel="account">02 <span>Account</span></button><button data-panel="resources">03 <span>Resources</span></button><button data-panel="about">04 <span>Port status</span></button></nav>
       <div class="content">
         <section id="connections" class="panel">
           <div class="section-title"><h2>Connection route</h2><span>01 / 03</span></div>
@@ -38,11 +38,19 @@
           <div class="actions"><button id="sign-in" class="primary">Sign in with Microsoft</button><button id="sign-out" class="ghost">Sign out</button></div>
           <div id="device" class="notice" hidden><p>Open <a id="verification" href="https://www.microsoft.com/link" target="_blank" rel="noopener noreferrer">microsoft.com/link</a> and enter:</p><strong id="device-code"></strong><p class="hint">Waiting for you to finish signing in…</p></div>
         </section>
+        <section id="resources" class="panel" hidden>
+          <div class="section-title"><h2>Local resources</h2><span>26.3</span></div>
+          <p class="description">Import a browser bundle exported from your prepared Horizon resources. Models and textures are read locally and stay in this tab. Importing or clearing a bundle also updates a connected world.</p>
+          <div class="field"><label for="resource-file">Resource bundle</label><input id="resource-file" type="file" accept=".zip"><small>Use the exporter in web/README.md. Maximum 128 MiB. Import again after reloading this page.</small></div>
+          <div class="actions"><button id="resource-demo" class="secondary">Load original demo assets</button><button id="resource-clear" class="ghost">Clear resources</button></div>
+          <p id="resource-status" class="description" role="status">No resource bundle loaded. Terrain uses placeholder colors.</p>
+          <p class="hint">Demo assets match the local fixture server only. Real servers need matching Minecraft 26.3 resources. Lighting, animated textures, fluids and biome colors are still being ported.</p>
+        </section>
         <section id="about" class="panel" hidden>
           <div class="section-title"><h2>The browser port</h2><span>IN PROGRESS</span></div>
           <p class="description">Horizon’s original Rust protocol, cryptography, compression and world data run as WebAssembly in this tab. A separate Rust gateway provides TCP and account API access.</p>
-          <ol class="status-list"><li><span>Rust / WASM connection core</span><b>Included</b></li><li><span>Selectable gateways &amp; egress proxies</span><b>Included</b></li><li><span>Routed Microsoft account flow</span><b>Public launcher ID</b></li><li><span>WebGPU terrain preview</span><b>Experimental</b></li><li><span>Native textures, entities &amp; inventory</span><b>Pending</b></li><li><span>Full movement, combat &amp; singleplayer</span><b>Pending</b></li></ol>
-          <p class="description">The terrain preview uses simple shaded blocks. It is not the native renderer or a complete playable client yet. Drag on the preview to look around; this build does not move your player.</p>
+          <ol class="status-list"><li><span>Rust / WASM connection core</span><b>Included</b></li><li><span>Selectable gateways &amp; egress proxies</span><b>Included</b></li><li><span>Routed Microsoft account flow</span><b>Public launcher ID</b></li><li><span>Local textures &amp; native block models</span><b>Experimental</b></li><li><span>Entities, inventory &amp; lighting</span><b>Pending</b></li><li><span>Full movement, combat &amp; singleplayer</span><b>Pending</b></li></ol>
+          <p class="description">The WebGPU preview uses Horizon’s model decoder and baker with an imported local bundle. Without resources it shows placeholder cubes. Drag on the preview to look around; this build does not move your player.</p>
           <a href="https://github.com/adoringlol/horizon/tree/web-port/web" target="_blank" rel="noopener noreferrer">Source &amp; setup instructions ↗</a>
         </section>
       </div>

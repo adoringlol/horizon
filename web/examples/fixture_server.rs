@@ -183,7 +183,7 @@ fn terrain(cx: i32, cz: i32) -> Vec<Section> {
                         let wy = -64 + sy * 16 + y;
                         let wx = cx * 16 + x;
                         let wz = cz * 16 + z;
-                        let ground = wy >= 60 && wy <= 63;
+                        let ground = (60..=63).contains(&wy);
                         let tower = (20..25).contains(&wx)
                             && (19..24).contains(&wz)
                             && (64..76).contains(&wy);
@@ -191,11 +191,19 @@ fn terrain(cx: i32, cz: i32) -> Vec<Section> {
                             && (18..29).contains(&wz)
                             && wy >= 64
                             && wy < 64 + (wz - 17) / 2;
-                        if ground || tower || steps {
-                            values[(y << 8 | z << 4 | x) as usize] = if tower {
+                        let leaves = (12..16).contains(&wx)
+                            && (18..22).contains(&wz)
+                            && (64..67).contains(&wy);
+                        let glass = wx == 18 && (17..23).contains(&wz) && (64..69).contains(&wy);
+                        if ground || tower || steps || leaves || glass {
+                            values[(y << 8 | z << 4 | x) as usize] = if glass {
+                                6
+                            } else if leaves {
+                                5
+                            } else if tower {
                                 2
                             } else if steps {
-                                3
+                                if wy == 63 + (wz - 17) / 2 { 7 } else { 3 }
                             } else {
                                 1
                             };
